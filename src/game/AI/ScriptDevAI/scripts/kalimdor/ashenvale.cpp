@@ -350,26 +350,29 @@ UnitAI* GetAI_npc_ruul_snowhoofAI(Creature* pCreature)
 
 enum
 {
-    SAY_READY                   = -1000106,
-    SAY_MOVE                    = -1000107,
-    SAY_PREPARE                 = -1000108,
-    SAY_WIN                     = -1000109,
-    SAY_END                     = -1000110,
+    SAY_READY = -1000106,
+    SAY_MOVE = -1000107,
+    SAY_PREPARE = -1000108,
+    SAY_WIN = -1000109,
+    SAY_END = -1000110,
 
-    SPELL_REND                  = 11977,
-    SPELL_THUNDERCLAP           = 8078,
+    SPELL_REND = 11977,
+    SPELL_THUNDERCLAP = 8078,
 
-    QUEST_TOREK_ASSULT          = 6544,
+    QUEST_TOREK_ASSULT = 6544,
 
-    NPC_SPLINTERTREE_RAIDER     = 12859,
-    NPC_DURIEL                  = 12860,
-    NPC_SILVERWING_SENTINEL     = 12896,
-    NPC_SILVERWING_WARRIOR      = 12897
+    NPC_SPLINTERTREE_RAIDER = 12859,
+    NPC_DURIEL = 12860,
+    NPC_SILVERWING_SENTINEL = 12896,
+    NPC_SILVERWING_WARRIOR = 12897,
+
+    FACTION_ORGRIMMAR = 85
+
 };
 
 struct npc_torekAI : public npc_escortAI
 {
-    npc_torekAI(Creature* pCreature) : npc_escortAI(pCreature) {Reset();}
+    npc_torekAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
 
     uint32 m_uiRend_Timer;
     uint32 m_uiThunderclap_Timer;
@@ -389,25 +392,25 @@ struct npc_torekAI : public npc_escortAI
 
         switch (uiPointId)
         {
-            case 2:
-                DoScriptText(SAY_MOVE, m_creature, pPlayer);
-                break;
-            case 9:
-                DoScriptText(SAY_PREPARE, m_creature, pPlayer);
-                break;
-            case 20:
-                // TODO: verify location and creatures amount.
-                m_creature->SummonCreature(NPC_DURIEL, 1776.73f, -2049.06f, 109.83f, 1.54f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
-                m_creature->SummonCreature(NPC_SILVERWING_SENTINEL, 1774.64f, -2049.41f, 109.83f, 1.40f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
-                m_creature->SummonCreature(NPC_SILVERWING_WARRIOR, 1778.73f, -2049.50f, 109.83f, 1.67f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
-                break;
-            case 21:
-                DoScriptText(SAY_WIN, m_creature, pPlayer);
-                pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_TOREK_ASSULT, m_creature);
-                break;
-            case 22:
-                DoScriptText(SAY_END, m_creature, pPlayer);
-                break;
+        case 2:
+            DoScriptText(SAY_MOVE, m_creature, pPlayer);
+            break;
+        case 9:
+            DoScriptText(SAY_PREPARE, m_creature, pPlayer);
+            break;
+        case 20:
+            // TODO: verify location and creatures amount.
+            m_creature->SummonCreature(NPC_DURIEL, 1776.73f, -2049.06f, 109.83f, 1.54f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
+            m_creature->SummonCreature(NPC_SILVERWING_SENTINEL, 1774.64f, -2049.41f, 109.83f, 1.40f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
+            m_creature->SummonCreature(NPC_SILVERWING_WARRIOR, 1778.73f, -2049.50f, 109.83f, 1.67f, TEMPSPAWN_TIMED_OOC_DESPAWN, 25000);
+            break;
+        case 21:
+            DoScriptText(SAY_WIN, m_creature, pPlayer);
+            pPlayer->RewardPlayerAndGroupAtEventExplored(QUEST_TOREK_ASSULT, m_creature);
+            break;
+        case 22:
+            DoScriptText(SAY_END, m_creature, pPlayer);
+            break;
         }
     }
 
@@ -447,6 +450,20 @@ bool QuestAccept_npc_torek(Player* pPlayer, Creature* pCreature, const Quest* pQ
     {
         // TODO: find companions, make them follow Torek, at any time (possibly done by mangos/database in future?)
         DoScriptText(SAY_READY, pCreature, pPlayer);
+
+        pCreature->SetFactionTemporary(FACTION_ORGRIMMAR, TEMPFACTION_RESTORE_RESPAWN);
+
+        CreatureList lRaiderList;
+        GetCreatureListWithEntryInGrid(lRaiderList, pCreature, NPC_SPLINTERTREE_RAIDER, 40.0f);
+        float i = -2;
+
+        for (CreatureList::const_iterator itr = lRaiderList.begin(); itr != lRaiderList.end(); ++itr)
+        {
+
+            (*itr)->SetFactionTemporary(FACTION_ORGRIMMAR, TEMPFACTION_RESTORE_RESPAWN);
+            (*itr)->GetMotionMaster()->MoveFollow(pCreature, 3, i);
+            --i;
+        }
 
         if (npc_torekAI* pEscortAI = dynamic_cast<npc_torekAI*>(pCreature->AI()))
             pEscortAI->Start(true, pPlayer, pQuest);
