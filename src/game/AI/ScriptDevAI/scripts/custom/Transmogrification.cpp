@@ -556,13 +556,13 @@ void Transmogrification::LoadConfig(bool reload)
 		NotAllowed.insert(entry);
 	}
 
-	ScaledCostModifier = 1.0f;
+	ScaledCostModifier = 3.0f;
 	CopperCost = 0;
 
 	RequireToken = false;
 	TokenEntry = 49426;
 	TokenAmount = 1;
-
+	
 	AllowPoor = true;
 	AllowCommon = true;
 	AllowUncommon = true;
